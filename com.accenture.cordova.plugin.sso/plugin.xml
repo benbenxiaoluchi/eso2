@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	id="com.accenture.cordova.plugin.sso"
+	version="1.0.6">
+
+  <engines>
+    <engine name="cordova-android" version=">=4.0.2" />
+    <engine name="cordova-ios" version=">=3.8.0" />
+    <engine name="android-sdk" version=">=18" />
+    <engine name="apple-xcode" version=">=6.4" />
+    <engine name="apple-ios" version=">=7.0" />
+  </engines>
+
+  <name>SSO</name>
+  <description>This plugin implements a wrapper for Accenture OAuth2 and SSO logic for Android and iOS.</description>
+  <author>Accenture</author>
+  <keywords>cordova,sso,oauth</keywords>
+
+  <license>Apache 2.0 License</license>
+
+  <asset src="www/sso.js" target="js/sso.js" />
+
+  <js-module src="www/sso.js" name="sso">
+    <clobbers target="sso" />
+  </js-module>
+
+  <platform name="android">
+    <config-file target="res/xml/config.xml" parent="/*">
+      <feature name="SSOPlugin" >
+        <param name="android-package" value="com.accenture.cordova.plugin.sso.SSOPlugin"/>
+      </feature>
+    </config-file>
+	
+    <config-file target="res/values/strings.xml" parent="/*">
+    	<string name="aam_account_type">com.accenture.sso</string>
+      <string name="accenture">Accenture</string>
+			<string name="alias">keystoreAlias</string>
+    </config-file>
+    
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+  		<uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
+  		<uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+  		<uses-permission android:name="android.permission.GET_ACCOUNTS" />
+  		<uses-permission android:name="android.permission.USE_CREDENTIALS" />
+      <uses-permission android:name="android.permission.INTERNET" />
+      <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    </config-file>
+    
+    <config-file target="AndroidManifest.xml" parent="/manifest/application">
+    	<service android:exported="false" android:name="com.accenture.cordova.plugin.sso.AuthenticatorService">
+    		<intent-filter>
+    			<action android:name="android.accounts.AccountAuthenticator" />
+    		</intent-filter>
+    		<meta-data android:name="android.accounts.AccountAuthenticator" android:resource="@xml/authenticator" />
+    	</service>
+      <activity
+          android:name="com.accenture.cordova.plugin.sso.OAuth2AuthorizationCodeRequestActivity"
+          android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+      </activity>
+    </config-file>
+    
+	  <resource-file src="res/xml/authenticator.xml" target="res/xml/authenticator.xml" />
+
+  	<source-file src="src/android/SSOPlugin.java" target-dir="src/com/accenture/cordova/plugin/sso" />
+  	<source-file src="src/android/SSOHelper.java" target-dir="src/com/accenture/cordova/plugin/sso" />
+  	<source-file src="src/android/NetworkException.java" target-dir="src/com/accenture/cordova/plugin/sso" />
+  	<source-file src="src/android/NetworkReachable.java" target-dir="src/com/accenture/cordova/plugin/sso" />
+  	<source-file src="src/android/SSOHelperDelegate.java" target-dir="src/com/accenture/cordova/plugin/sso" />
+    <source-file src="src/android/oauth2/OAuth2AuthorizationCodeRequestActivity.java" target-dir="src/com/accenture/cordova/plugin/sso" />
+    <source-file src="src/android/oauth2/OAuth2TokenResponse.java" target-dir="src/com/accenture/cordova/plugin/sso" />
+    <source-file src="src/android/oauth2/OAuth2Keys.java" target-dir="src/com/accenture/cordova/plugin/sso" />
+    <source-file src="src/android/oauth2/OAuth2.java" target-dir="src/com/accenture/cordova/plugin/sso" />
+    <source-file src="src/android/accountmanager/AccountManger.java" target-dir="src/com/accenture/cordova/plugin/sso" />
+    <source-file src="src/android/accountmanager/Authenticator.java" target-dir="src/com/accenture/cordova/plugin/sso" />
+    <source-file src="src/android/accountmanager/AuthenticatorService.java" target-dir="src/com/accenture/cordova/plugin/sso" />
+    <source-file src="src/android/encryption/tokencipher/TokenCipher.java" target-dir="src/com/accenture/cordova/plugin/sso" />
+    <source-file src="src/android/encryption/tokencipher/TokenCipherManager.java" target-dir="src/com/accenture/cordova/plugin/sso" />
+    <source-file src="src/android/encryption/crypto/Crypto.java" target-dir="src/com/accenture/cordova/plugin/sso" />
+    <source-file src="src/android/keyczar-0.71g.jar" target-dir="libs" />
+
+    <framework src="src/android/sso.gradle" custom="true" type="gradleReference" />
+    
+    <hook type="after_prepare" src="src/android/hooks/add_shared_user_id.js" />
+  </platform>
+
+  <platform name="ios">
+    <config-file target="config.xml" parent="/*">
+      <feature name="SSOPlugin">
+        <param name="ios-package" value="SSOPlugin" />
+      </feature>
+    </config-file>
+    
+    <config-file target="*-Info.plist" parent="NSAppTransportSecurity">
+	  <dict>
+		  <key>NSAllowsArbitraryLoads</key>
+		  <true/>
+  	</dict>
+    </config-file>
+    
+    <config-file target="*-Info.plist" parent="LSApplicationQueriesSchemes">
+  	<array>
+  		<string>accenture</string>
+  	</array>
+    </config-file>
+
+    <framework src="Security.framework" />
+    <framework src="SystemConfiguration.framework" />
+
+  	<header-file src="src/ios/SSOPlugin.h" />
+    <source-file src="src/ios/SSOPlugin.m" />
+  	<header-file src="src/ios/SSOHelper.h" />
+    <source-file src="src/ios/SSOHelper.m" />
+  	<header-file src="src/ios/NetworkReachability.h" />
+    <source-file src="src/ios/NetworkReachability.m" />
+  	<header-file src="src/ios/SSOAutoHeightLabel.h" />
+    <source-file src="src/ios/SSOAutoHeightLabel.m" />
+  	<header-file src="src/ios/SSOExtensionHelpItemViewController.h" />
+    <source-file src="src/ios/SSOExtensionHelpItemViewController.m" />
+  	<header-file src="src/ios/SSOExtensionHelpViewController.h" />
+    <source-file src="src/ios/SSOExtensionHelpViewController.m" />
+    
+    <resource-file src="res/ios/SSOExtensionHelp.storyboard" />
+    <resource-file src="res/ios/slide-1-check-empty.png" />
+    <resource-file src="res/ios/slide-1-check-empty@2x.png" />
+    <resource-file src="res/ios/slide-1-check-empty@3x.png" />
+    <resource-file src="res/ios/slide-1-check-select.png" />
+    <resource-file src="res/ios/slide-1-check-select@2x.png" />
+    <resource-file src="res/ios/slide-1-check-select@3x.png" />
+    <resource-file src="res/ios/slide-1-image.png" />
+    <resource-file src="res/ios/slide-1-image@2x.png" />
+    <resource-file src="res/ios/slide-1-image@3x.png" />
+    <resource-file src="res/ios/slide-2-image.png" />
+    <resource-file src="res/ios/slide-2-image@2x.png" />
+    <resource-file src="res/ios/slide-2-image@3x.png" />
+    <resource-file src="res/ios/slide-3-toggle.png" />
+    <resource-file src="res/ios/slide-3-toggle@2x.png" />
+    <resource-file src="res/ios/slide-3-toggle@3x.png" />
+    <resource-file src="res/ios/slide-4-button-background.png" />
+    <resource-file src="res/ios/slide-4-button-background@2x.png" />
+    <resource-file src="res/ios/slide-4-button-background@3x.png" />
+    <resource-file src="res/ios/slide-4-check.png" />
+    <resource-file src="res/ios/slide-4-check@2x.png" />
+    <resource-file src="res/ios/slide-4-check@3x.png" />
+    <resource-file src="res/ios/slide-4-toggle.png" />
+    <resource-file src="res/ios/slide-4-toggle@2x.png" />
+    <resource-file src="res/ios/slide-4-toggle@3x.png" />
+
+  	<header-file src="src/ios/OAuth/OAuth2AuthorizationCodeRequestViewController.h" />
+    <source-file src="src/ios/OAuth/OAuth2AuthorizationCodeRequestViewController.m" />
+  	<header-file src="src/ios/OAuth/OAuth2Manager.h" />
+    <source-file src="src/ios/OAuth/OAuth2Manager.m" />
+    <header-file src="src/ios/OAuth/NXOAuth2/NXOAuth2Account+Private.h" />
+    <header-file src="src/ios/OAuth/NXOAuth2/NSData+NXOAuth2.h" />
+    <source-file src="src/ios/OAuth/NXOAuth2/NSData+NXOAuth2.m" />
+    <header-file src="src/ios/OAuth/NXOAuth2/NSString+NXOAuth2.h" />
+    <source-file src="src/ios/OAuth/NXOAuth2/NSString+NXOAuth2.m" />
+    <header-file src="src/ios/OAuth/NXOAuth2/NSURL+NXOAuth2.h" />
+    <source-file src="src/ios/OAuth/NXOAuth2/NSURL+NXOAuth2.m" />
+    <header-file src="src/ios/OAuth/NXOAuth2/NXOAuth2.h" />
+    <header-file src="src/ios/OAuth/NXOAuth2/NXOAuth2AccessToken.h" />
+    <source-file src="src/ios/OAuth/NXOAuth2/NXOAuth2AccessToken.m" />
+    <header-file src="src/ios/OAuth/NXOAuth2/NXOAuth2Account.h" />
+    <source-file src="src/ios/OAuth/NXOAuth2/NXOAuth2Account.m" />
+    <header-file src="src/ios/OAuth/NXOAuth2/NXOAuth2AccountStore.h" />
+    <source-file src="src/ios/OAuth/NXOAuth2/NXOAuth2AccountStore.m" />
+    <header-file src="src/ios/OAuth/NXOAuth2/NXOAuth2Client.h" />
+    <source-file src="src/ios/OAuth/NXOAuth2/NXOAuth2Client.m" />
+    <header-file src="src/ios/OAuth/NXOAuth2/NXOAuth2ClientDelegate.h" />
+    <header-file src="src/ios/OAuth/NXOAuth2/NXOAuth2Connection.h" />
+    <source-file src="src/ios/OAuth/NXOAuth2/NXOAuth2Connection.m" />
+    <header-file src="src/ios/OAuth/NXOAuth2/NXOAuth2ConnectionDelegate.h" />
+    <header-file src="src/ios/OAuth/NXOAuth2/NXOAuth2Constants.h" />
+    <source-file src="src/ios/OAuth/NXOAuth2/NXOAuth2Constants.m" />
+    <header-file src="src/ios/OAuth/NXOAuth2/NXOAuth2FileStreamWrapper.h" />
+    <source-file src="src/ios/OAuth/NXOAuth2/NXOAuth2FileStreamWrapper.m" />
+    <header-file src="src/ios/OAuth/NXOAuth2/NXOAuth2PostBodyPart.h" />
+    <source-file src="src/ios/OAuth/NXOAuth2/NXOAuth2PostBodyPart.m" />
+    <header-file src="src/ios/OAuth/NXOAuth2/NXOAuth2PostBodyStream.h" />
+    <source-file src="src/ios/OAuth/NXOAuth2/NXOAuth2PostBodyStream.m" />
+    <header-file src="src/ios/OAuth/NXOAuth2/NXOAuth2Request.h" />
+    <source-file src="src/ios/OAuth/NXOAuth2/NXOAuth2Request.m" />
+    <header-file src="src/ios/OAuth/NXOAuth2/NXOAuth2TrustDelegate.h" />
+
+  	<header-file src="src/ios/Keychain/KeychainHelper.h" />
+    <source-file src="src/ios/Keychain/KeychainHelper.m" />
+  	<header-file src="src/ios/Keychain/UICKeyChainStore.h" />
+    <source-file src="src/ios/Keychain/UICKeyChainStore.m" />
+
+    <hook type="after_plugin_install" src="src/ios/hooks/prerequisites.js"/>
+    <hook type="after_plugin_install" src="src/ios/hooks/install_entitlements.js"/>
+  </platform>
+
+  <info>
+
+  </info>
+
+</plugin>
